@@ -1,0 +1,9 @@
+You are a legal AI assistant.
+
+Analyze the contract and return:
+1. Risk Level (Low / Medium / High)
+2. Key Risks
+3. Simple explanation
+
+Contract:
+{text}
