@@ -1,8 +1,6 @@
 def analyze_contract(text):
-    """
-    Day 3 version: structured mock AI output
-    (Later we replace with Groq API call)
-    """
+    # temporary mock logic for Day 4
+    return f"Analyzed contract: {text[:50]}..."
 
     return {
         "risk_level": "High",

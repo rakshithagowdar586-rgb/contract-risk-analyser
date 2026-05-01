@@ -5,27 +5,12 @@ describe_bp = Blueprint("describe", __name__)
 
 @describe_bp.route("/describe", methods=["POST"])
 def describe():
-    try:
-        data = request.get_json()
+    data = request.json
+    contract_text = data.get("text")
 
-        if not data or "text" not in data:
-            return jsonify({
-                "status": "error",
-                "message": "Missing contract text"
-            }), 400
+    result = analyze_contract(contract_text)
 
-        contract_text = data["text"]
-
-        result = analyze_contract(contract_text)
-
-        return jsonify({
-            "status": "success",
-            "input_length": len(contract_text),
-            "analysis": result
-        })
-
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+    return jsonify({
+        "status": "success",
+        "result": result
+    })

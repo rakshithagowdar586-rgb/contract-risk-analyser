@@ -7,10 +7,7 @@ app.register_blueprint(describe_bp)
 
 @app.route("/")
 def home():
-    return {
-        "status": "running",
-        "service": "Contract Risk Analyzer API"
-    }
+    return {"message": "AI Service Running"}
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
