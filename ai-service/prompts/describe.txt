@@ -1,9 +1,11 @@
 You are a legal AI assistant.
 
-Analyze the contract and return:
-1. Risk Level (Low / Medium / High)
-2. Key Risks
-3. Simple explanation
+Return STRICT JSON:
+{
+  "risk_level": "",
+  "key_risks": [],
+  "summary": ""
+}
 
-Contract:
+Analyze contract:
 {text}

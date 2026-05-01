@@ -1,10 +1,15 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 def analyze_contract(text):
-    # For Day 2: simple mock logic OR Groq integration
+    """
+    Day 3 version: structured mock AI output
+    (Later we replace with Groq API call)
+    """
 
-    # If Groq not ready, keep fallback:
-    return f"Risk analysis completed for contract: {text[:100]}..."
+    return {
+        "risk_level": "High",
+        "key_risks": [
+            "Unlimited liability clause detected",
+            "No termination clause",
+            "No dispute resolution mechanism"
+        ],
+        "summary": f"Contract analyzed with {len(text)} characters input"
+    }

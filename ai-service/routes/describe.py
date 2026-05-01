@@ -4,19 +4,24 @@ from services.groq_service import analyze_contract
 describe_bp = Blueprint("describe", __name__)
 
 @describe_bp.route("/describe", methods=["POST"])
-def describe_contract():
+def describe():
     try:
         data = request.get_json()
-        contract_text = data.get("text")
 
-        if not contract_text:
-            return jsonify({"error": "No contract text provided"}), 400
+        if not data or "text" not in data:
+            return jsonify({
+                "status": "error",
+                "message": "Missing contract text"
+            }), 400
+
+        contract_text = data["text"]
 
         result = analyze_contract(contract_text)
 
         return jsonify({
             "status": "success",
-            "result": result
+            "input_length": len(contract_text),
+            "analysis": result
         })
 
     except Exception as e:
