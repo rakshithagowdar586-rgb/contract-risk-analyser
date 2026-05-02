@@ -1,41 +1,86 @@
 import os
 import requests
-from services.prompt_loader import load_prompt
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+API_KEY = os.getenv("GROQ_API_KEY")
 
-headers = {
-    "Authorization": f"Bearer {GROQ_API_KEY}",
-    "Content-Type": "application/json"
-}
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-def call_groq(prompt, user_input):
-    url = "https://api.groq.com/openai/v1/chat/completions"
+
+def call_groq(system_prompt, user_input):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
 
     payload = {
         "model": "llama-3.1-8b-instant",
         "messages": [
-            {"role": "system", "content": prompt},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_input}
-        ]
+        ],
+        "temperature": 0.3
     }
 
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(GROQ_URL, headers=headers, json=payload)
     data = response.json()
 
     if "choices" not in data:
-        return str(data)
+        print("GROQ ERROR:", data)
+        return None
 
     return data["choices"][0]["message"]["content"]
 
 
-# ✅ REQUIRED for /describe
+# -------------------------
+# 1. DESCRIBE API
+# -------------------------
 def analyze_contract(text):
-    prompt = load_prompt("describe_prompt")
+    prompt = """
+You are a legal AI assistant.
+
+Analyze the contract and return:
+- key risks
+- explanation
+- structured summary
+
+Keep it clear and professional.
+"""
     return call_groq(prompt, text)
 
 
-# ✅ REQUIRED for /recommend
+# -------------------------
+# 2. RECOMMEND API
+# -------------------------
 def generate_recommendations(text):
-    prompt = load_prompt("recommend_prompt")
+    prompt = """
+You are a legal AI assistant.
+
+Return ONLY valid JSON in this format:
+
+{
+  "recommendations": [
+    {
+      "action_type": "string",
+      "description": "string",
+      "priority": "high | medium | low"
+    },
+    {
+      "action_type": "string",
+      "description": "string",
+      "priority": "high | medium | low"
+    },
+    {
+      "action_type": "string",
+      "description": "string",
+      "priority": "high | medium | low"
+    }
+  ]
+}
+
+Rules:
+- Exactly 3 recommendations
+- No explanation
+- Strict JSON only
+"""
+
     return call_groq(prompt, text)

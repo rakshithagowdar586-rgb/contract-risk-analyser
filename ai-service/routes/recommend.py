@@ -11,7 +11,7 @@ def recommend():
     try:
         data = request.get_json()
 
-        # ✅ Input validation
+        # ✅ validation
         if not data or "text" not in data:
             return jsonify({
                 "status": "error",
@@ -24,39 +24,41 @@ def recommend():
                 "message": "Empty text"
             }), 400
 
-        # ✅ AI call
         raw_result = generate_recommendations(data["text"])
 
-        # ✅ Extract JSON safely (fix for your error)
+        # ✅ AI failure handling
+        if not raw_result:
+            return jsonify({
+                "status": "error",
+                "message": "AI failed"
+            }), 500
+
+        # ✅ Extract JSON safely
         try:
-            # Find JSON block inside AI response
             json_match = re.search(r"\{.*\}", raw_result, re.DOTALL)
 
             if not json_match:
                 raise ValueError("No JSON found")
 
-            json_str = json_match.group()
-            parsed = json.loads(json_str)
+            parsed = json.loads(json_match.group())
 
         except Exception:
             return jsonify({
                 "status": "error",
                 "message": "Invalid AI response",
-                "raw": raw_result   # helpful for debugging
+                "raw": raw_result
             }), 500
 
-        # ✅ Extract recommendations
         recommendations = parsed.get("recommendations", [])
 
-        # ✅ Ensure exactly 3 recommendations
+        # ✅ ensure 3 results
         if len(recommendations) != 3:
             return jsonify({
                 "status": "error",
-                "message": "AI did not return exactly 3 recommendations",
+                "message": "AI did not return 3 recommendations",
                 "raw": parsed
             }), 500
 
-        # ✅ Final response
         return jsonify({
             "status": "success",
             "generated_at": datetime.utcnow().isoformat(),

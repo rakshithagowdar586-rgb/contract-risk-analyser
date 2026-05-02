@@ -1,40 +1,51 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from datetime import datetime
-from services.groq_service import analyze_contract
+
+from flask import Blueprint, request
+from datetime import datetime
+import json
+
+from services.groq_service import analyze_contract, generate_recommendations
 
 describe_bp = Blueprint("describe", __name__)
 
+
+# -------------------------
+# /describe
+# -------------------------
 @describe_bp.route("/describe", methods=["POST"])
 def describe():
+    data = request.get_json()
+
+    text = data.get("text", "")
+
+    result = analyze_contract(text)
+
+    return {
+        "status": "success",
+        "generated_at": datetime.utcnow().isoformat(),
+        "result": result
+    }
+
+
+# -------------------------
+# /recommend
+# -------------------------
+@describe_bp.route("/recommend", methods=["POST"])
+def recommend():
+    data = request.get_json()
+
+    text = data.get("text", "")
+
+    raw = generate_recommendations(text)
+
     try:
-        data = request.get_json()
+        parsed = json.loads(raw)
+    except:
+        parsed = {"recommendations": []}
 
-        # Input validation
-        if not data or "text" not in data:
-            return jsonify({
-                "status": "error",
-                "message": "Missing 'text' field"
-            }), 400
-
-        contract_text = data["text"]
-
-        if not contract_text.strip():
-            return jsonify({
-                "status": "error",
-                "message": "Empty contract text"
-            }), 400
-
-        # AI call
-        result = analyze_contract(contract_text)
-
-        return jsonify({
-            "status": "success",
-            "generated_at": datetime.utcnow().isoformat(),
-            "result": result
-        })
-
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+    return {
+        "status": "success",
+        "generated_at": datetime.utcnow().isoformat(),
+        "result": parsed
+    }
