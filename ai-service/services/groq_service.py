@@ -1,36 +1,41 @@
 import os
 import requests
+from services.prompt_loader import load_prompt
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-def analyze_contract(contract_text):
+headers = {
+    "Authorization": f"Bearer {GROQ_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+def call_groq(prompt, user_input):
     url = "https://api.groq.com/openai/v1/chat/completions"
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
     payload = {
-        "model": "llama-3.1-8b-instant",  # ✅ updated model
+        "model": "llama-3.1-8b-instant",
         "messages": [
-            {
-                "role": "system",
-                "content": "You are a legal contract analyzer. Summarize risks clearly."
-            },
-            {
-                "role": "user",
-                "content": contract_text
-            }
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": user_input}
         ]
     }
 
     response = requests.post(url, headers=headers, json=payload)
-
     data = response.json()
 
-    # ✅ SAFE CHECK (prevents KeyError)
     if "choices" not in data:
-        return {"error": data}
+        return str(data)
 
     return data["choices"][0]["message"]["content"]
+
+
+# ✅ REQUIRED for /describe
+def analyze_contract(text):
+    prompt = load_prompt("describe_prompt")
+    return call_groq(prompt, text)
+
+
+# ✅ REQUIRED for /recommend
+def generate_recommendations(text):
+    prompt = load_prompt("recommend_prompt")
+    return call_groq(prompt, text)

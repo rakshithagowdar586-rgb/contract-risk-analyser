@@ -1,5 +1,4 @@
-def load_prompt(file_path, text):
-    with open(file_path, "r", encoding="utf-8") as f:
-        prompt = f.read()
-
+def load_prompt(name):
+    with open(f"prompts/{name}.txt", "r") as f:
+        return f.read()
     return prompt.replace("{text}", text)

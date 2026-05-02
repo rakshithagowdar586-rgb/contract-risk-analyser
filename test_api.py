@@ -1,9 +1,9 @@
 import requests
 
-url = "http://127.0.0.1:5000/describe"
+url = "http://127.0.0.1:5000/recommend"
 
 payload = {
-    "text": "This is a software development contract for 6 months between two companies."
+    "text": "This contract has unclear payment terms and no termination clause."
 }
 
 response = requests.post(url, json=payload)
