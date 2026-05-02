@@ -2,10 +2,10 @@ import requests
 
 url = "http://127.0.0.1:5000/describe"
 
-data = {
-    "text": "This contract has unlimited liability and no termination clause."
+payload = {
+    "text": "This is a software development contract for 6 months between two companies."
 }
 
-response = requests.post(url, json=data)
+response = requests.post(url, json=payload)
 
 print(response.json())
