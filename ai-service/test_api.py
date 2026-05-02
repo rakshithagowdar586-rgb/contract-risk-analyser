@@ -1,18 +1,17 @@
 import requests
 
-url = "http://127.0.0.1:5000/recommend"
+url = "http://127.0.0.1:5000/contract"
 
 payload = {
-    "text": """
-This agreement is between Company A and Company B for software development.
-Duration is 6 months. Payment is milestone-based. 
-Company A will deliver code, Company B will review and approve.
-
-There is no clarity on intellectual property ownership or liability.
-Termination clause is not defined clearly.
-"""
+    "description": "Software contract with unclear IP and liability"
 }
 
 response = requests.post(url, json=payload)
 
-print(response.json())
+print("STATUS CODE:", response.status_code)
+print("RAW RESPONSE:", response.text)
+
+try:
+    print("JSON:", response.json())
+except Exception as e:
+    print("Not JSON response:", e)
