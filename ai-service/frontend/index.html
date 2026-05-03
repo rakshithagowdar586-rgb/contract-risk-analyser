@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contract Risk Analyzer</title>
+</head>
+<body>
+
+<h2>Contract Risk Analyzer</h2>
+
+<input id="text" placeholder="Enter contract..." style="width:300px;">
+<button onclick="send()">Analyze</button>
+
+<pre id="output"></pre>
+
+<script>
+function send() {
+    const text = document.getElementById("text").value.trim();
+
+    if (!text) {
+        document.getElementById("output").innerText = "Please enter contract text";
+        return;
+    }
+
+    fetch("http://localhost:5000/describe", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("output").innerText = data.result || data.error;
+    })
+    .catch(() => {
+        document.getElementById("output").innerText = "Server error";
+    });
+}
+</script>
+
+</body>
+</html>

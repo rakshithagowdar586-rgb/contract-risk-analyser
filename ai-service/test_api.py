@@ -1,17 +1,27 @@
 import requests
+import json
 
-url = "http://127.0.0.1:5000/contract"
+BASE_URL = "http://127.0.0.1:5000"
 
-payload = {
-    "description": "Software contract with unclear IP and liability"
-}
 
-response = requests.post(url, json=payload)
+def test_describe():
 
-print("STATUS CODE:", response.status_code)
-print("RAW RESPONSE:", response.text)
+    url = f"{BASE_URL}/describe"
 
-try:
-    print("JSON:", response.json())
-except Exception as e:
-    print("Not JSON response:", e)
+    payload = {
+        "text": "Software contract with unclear IP and liability"
+    }
+
+    response = requests.post(url, json=payload)
+
+    print("\nSTATUS CODE:", response.status_code)
+    print("RAW RESPONSE:", response.text)
+
+    try:
+        print("\nJSON:", json.dumps(response.json(), indent=2))
+    except Exception as e:
+        print("\nJSON ERROR:", str(e))
+
+
+if __name__ == "__main__":
+    test_describe()

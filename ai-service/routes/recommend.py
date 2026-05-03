@@ -28,10 +28,10 @@ def recommend():
 
         # ✅ AI failure handling
         if not raw_result:
-            return jsonify({
+            return jsonify ({
                 "status": "error",
                 "message": "AI failed"
-            }), 500
+         }), 500
 
         # ✅ Extract JSON safely
         try:

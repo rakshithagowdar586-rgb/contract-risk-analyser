@@ -6,12 +6,17 @@ class AiServiceClient:
         try:
             url = "http://127.0.0.1:5000/describe"
 
-            response = requests.post(url, json={
-                "text": text
-            })
+            print("SENDING REQUEST TO AI SERVER...")
 
-            return response.json()
+            response = requests.post(url, json={"text": text})
+
+            print("STATUS:", response.status_code)
+            print("RAW:", response.text)
+
+            data = response.json()
+
+            return data
 
         except Exception as e:
-            print("AI ERROR:", e)
+            print("CLIENT ERROR:", e)
             return None
