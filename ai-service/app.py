@@ -1,17 +1,10 @@
 from flask import Flask
-from routes.contract import contract_bp
+from routes.report import report_bp
 
-# Create Flask app
 app = Flask(__name__)
 
-# Register blueprint (IMPORTANT)
-app.register_blueprint(contract_bp)
+# register blueprint
+app.register_blueprint(report_bp)
 
-# Optional: test route (to check server running)
-@app.route("/")
-def home():
-    return "AI Service is running 🚀"
-
-# Run server
 if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    app.run(debug=True)

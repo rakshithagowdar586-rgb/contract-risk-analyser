@@ -1,28 +1,23 @@
 from flask import Blueprint, request, jsonify
-from services.groq_service import generate_report
+from services.groq_service import generate_structured_report
 
 report_bp = Blueprint("report", __name__)
 
 @report_bp.route("/generate-report", methods=["POST"])
-def generate_report_api():
+def generate_report():
+    try:
+        data = request.get_json()
+        text = data.get("text")
 
-    data = request.get_json()
+        if not text:
+            return jsonify({"error": "text is required"}), 400
 
-    if not data or "text" not in data:
+        result = generate_structured_report(text)
+
+        return jsonify(result), 200
+
+    except Exception as e:
         return jsonify({
-            "status": "error",
-            "message": "Missing text input"
-        }), 400
-
-    result = generate_report(data["text"])
-
-    if not result:
-        return jsonify({
-            "status": "error",
-            "message": "AI failed"
+            "error": "Failed to generate report",
+            "details": str(e)
         }), 500
-
-    return jsonify({
-        "status": "success",
-        "report": result
-    })
