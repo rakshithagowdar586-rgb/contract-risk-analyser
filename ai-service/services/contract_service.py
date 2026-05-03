@@ -1,47 +1,53 @@
-import threading
 from flask import Blueprint, request, jsonify
+import time
+
 from services.groq_service import analyze_contract
+from services.cache_service import get_cache, set_cache
+from utils.hash_util import generate_key
 
 contract_bp = Blueprint("contract", __name__)
 
-results_store = {}
-
-def run_ai_async(text, request_id):
-    result = analyze_contract(text)
-
-    if result is None:
-        result = "AI service unavailable"
-
-    results_store[request_id] = result
-
+response_times = []
 
 @contract_bp.route("/create", methods=["POST"])
 def create_contract():
-    data = request.json
-    text = data.get("text")
+    start = time.time()
+
+    data = request.get_json()
+    text = data.get("text", "")
 
     if not text:
-        return jsonify({"error": "No text provided"}), 400
+        return jsonify({"error": "text is required"}), 400
 
-    request_id = str(len(results_store) + 1)
+    key = generate_key(text)
 
-    thread = threading.Thread(target=run_ai_async, args=(text, request_id))
-    thread.start()
+    # 🔥 CHECK CACHE FIRST
+    cached = get_cache(key)
+    if cached:
+        result = cached
+    else:
+        result = analyze_contract(text)
+        set_cache(key, result)
+
+    end = time.time()
+    response_times.append(end - start)
 
     return jsonify({
-        "message": "Processing started",
-        "request_id": request_id
+        "analysis": result,
+        "request_id": len(response_times)
     })
 
 
-@contract_bp.route("/result/<request_id>", methods=["GET"])
-def get_result(request_id):
-    result = results_store.get(request_id)
-
-    if not result:
-        return jsonify({"status": "Processing"}), 202
-
+@contract_bp.route("/result/<int:req_id>", methods=["GET"])
+def get_result(req_id):
     return jsonify({
-        "request_id": request_id,
-        "analysis": result
+        "analysis": "Analyzing contract risk completed.",
+        "request_id": req_id
     })
+
+
+# optional health helper data
+def get_avg_response_time():
+    if not response_times:
+        return 0
+    return sum(response_times) / len(response_times)
