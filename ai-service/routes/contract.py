@@ -12,6 +12,8 @@ def create_contract():
     text = data.get("text", "")
 
     result = analyze_contract(text)
+    if not text or len(text) > 5000:
+     return {"error": "Invalid input"}, 400
 
     duration = end_timer(start)
 
