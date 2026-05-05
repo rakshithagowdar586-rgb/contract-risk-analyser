@@ -32,11 +32,7 @@ def create_contract():
     end = time.time()
     response_times.append(end - start)
 
-    return jsonify({
-        "analysis": result,
-        "request_id": len(response_times)
-    })
-
+   
 
 @contract_bp.route("/result/<int:req_id>", methods=["GET"])
 def get_result(req_id):
