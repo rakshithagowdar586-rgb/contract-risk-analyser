@@ -1,0 +1,1 @@
+Termination clauses should specify causes for termination and obligations after termination.

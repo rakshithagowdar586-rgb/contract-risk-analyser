@@ -1,0 +1,1 @@
+Software contracts should clearly define intellectual property ownership, payment terms, liabilities, indemnification, and confidentiality clauses.

@@ -1,0 +1,1 @@
+Vendor contracts must specify delivery timelines, penalties, service-level agreements, and dispute resolution mechanisms.
