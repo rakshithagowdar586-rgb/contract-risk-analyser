@@ -7,9 +7,11 @@ health_bp = Blueprint("health", __name__)
 def health():
     metrics = get_metrics()
 
+    # ALWAYS return JSON (never None)
     return jsonify({
         "status": "healthy",
         "model": "Groq-LLM / Contract Risk AI",
-        "uptime_seconds": get_uptime(),
-        **metrics
+        "requests_tracked": metrics.get("requests_tracked", 0),
+        "avg_response_time_sec": metrics.get("avg_response_time_sec", 0),
+        "uptime_seconds": get_uptime()
     })

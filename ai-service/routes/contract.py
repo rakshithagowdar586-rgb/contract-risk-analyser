@@ -1,74 +1,68 @@
 from flask import Blueprint, request, jsonify
-import hashlib
-import time
-from services.metrics_service import add_request_time
+import hashlib, time
 from services.cache_service import get_cache, set_cache
+from services.metrics_service import add_request_time
 from services.groq_service import analyze_contract_safe
-
 
 contract_bp = Blueprint("contract", __name__)
 
-
-# ----------------------------
-# SHA256 KEY
-# ----------------------------
 def generate_key(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-
-# ----------------------------
-# RESPONSE TRACKING
-# ----------------------------
-request_times = []
-
-
-def get_avg_response_time():
-    if not request_times:
-        return 0
-    return sum(request_times) / len(request_times)
-
-
-
-# ----------------------------
-# MAIN ENDPOINT
-# ----------------------------
 @contract_bp.route("/create", methods=["POST"])
 def create_contract():
-    start = time.time()
+    try:
+        start = time.time()
 
-    data = request.get_json()
-    text = data.get("text", "")
+        data = request.get_json(silent=True) or {}
+        text = data.get("text")
 
-    key = generate_key(text)
+        if not isinstance(text, str) or not text.strip():
+            return jsonify({"error": "Invalid input: 'text' required"}), 400
 
-    # CACHE HIT
-    cached = get_cache(key)
-    if cached:
+        if len(text) > 5000:
+            return jsonify({"error": "Text too large"}), 400
+
+        key = generate_key(text)
+
+        # CACHE
+        cached = get_cache(key)
+        if cached is not None:
+            rt = time.time() - start
+            add_request_time(rt)
+            return jsonify({
+                "cached": True,
+                "is_fallback": False,
+                "response_time": round(rt, 4),
+                "data": cached
+            }), 200
+
+        # AI (SAFE)
+        result = analyze_contract_safe(text) or {}
+
+        data_block = result.get("data")
+        if not isinstance(data_block, dict):
+            data_block = {
+                "title": "Fallback",
+                "summary": "AI failed",
+                "overview": "Fallback triggered",
+                "key_items": [],
+                "recommendations": []
+            }
+            result["is_fallback"] = True
+
+        set_cache(key, data_block)
+
         rt = time.time() - start
-        request_times.append(rt)
+        add_request_time(rt)
 
         return jsonify({
-            "cached": True,
-            "is_fallback": False,
+            "cached": False,
+            "is_fallback": result.get("is_fallback", False),
             "response_time": round(rt, 4),
-            "data": cached
-        })
-        
+            "data": data_block
+        }), 200
 
-    # AI CALL
-    result = analyze_contract_safe(text)
-
-    set_cache(key, result["data"])
-
-    rt = time.time() - start
-    request_times.append(rt)
-    add_request_time(rt)
-
-    return jsonify({
-        "cached": False,
-        "is_fallback": result.get("is_fallback", False),
-        "response_time": round(rt, 4),
-        "data": result["data"]
-    })
-    
-   
+    except Exception as e:
+        print(" ERROR in /create:", repr(e))
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500

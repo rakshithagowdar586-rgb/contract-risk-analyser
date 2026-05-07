@@ -1,46 +1,89 @@
 from flask import Flask, request, g
 import time
 
+# ----------------------------
+# IMPORT ROUTES
+# ----------------------------
 from routes.contract import contract_bp
-from routes.report import report_bp
 from routes.health import health_bp
+from routes.report import report_bp
 
+# ----------------------------
+# PRELOAD MODEL
+# ----------------------------
+from services.model_loader import load_model
+
+# ----------------------------
+# APP INIT
+# ----------------------------
 app = Flask(__name__)
+app.start_time = time.time()
 
+# ----------------------------
+# ROOT ROUTE
+# ----------------------------
+@app.route("/")
+def home():
+    return {
+        "message": "Contract Risk AI API running"
+    }
+
+# ----------------------------
+# REGISTER BLUEPRINTS
+# ----------------------------
 app.register_blueprint(contract_bp)
-app.register_blueprint(report_bp)
 app.register_blueprint(health_bp)
+app.register_blueprint(report_bp)
 
-# -----------------------------
-# TIMER START
-# -----------------------------
+# ----------------------------
+# REQUEST TIMER START
+# ----------------------------
 @app.before_request
 def start_timer():
     g.start_time = time.time()
 
-
-# -----------------------------
-# AFTER REQUEST (COMBINED FIX)
-# -----------------------------
+# ----------------------------
+# SECURITY HEADERS
+# ----------------------------
 @app.after_request
-def add_headers_and_metrics(response):
+def add_security_headers(response):
 
-    # Response time
-    if hasattr(g, "start_time"):
-        response_time = time.time() - g.start_time
-        response.headers["X-Response-Time"] = str(round(response_time, 3))
-
-    # Security headers (ZAP-ready)
+    # Security Headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; object-src 'none'; frame-ancestors 'none'"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), microphone=(), camera=()"
+    )
+
+    # Hide Flask server info
+    response.headers["Server"] = "SecureServer"
+
+    # Response Time Header
+    if hasattr(g, "start_time"):
+        response_time = time.time() - g.start_time
+        response.headers["X-Response-Time"] = str(
+            round(response_time, 4)
+        )
 
     return response
 
-
+# ----------------------------
+# MAIN
+# ----------------------------
 if __name__ == "__main__":
-    app.run(debug=False)
+
+    print("Starting application...")
+
+    # Preload sentence-transformers model
+    load_model()
+
+    # Run Flask
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True,
+        use_reloader=False
+    )
