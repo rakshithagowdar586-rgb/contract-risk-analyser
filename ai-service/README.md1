@@ -1,89 +1,30 @@
-# Contract Risk Analyzer – AI Service
+# Contract Risk AI Service
 
-##  Project Overview (Day 1 – Day 10)
+AI backend service for Contract Risk Analyzer project.
 
-This project is an AI-powered Contract Risk Analyzer that processes contract text and identifies potential legal risks using AI.
+## Features
+- Contract risk prediction
+- Flask REST API
+- Docker support
+- Health monitoring endpoint
 
-It was developed incrementally scovering backend setup, AI integration, caching, security, and performance optimization.
+## Endpoints
 
----
+### Root
+GET /
 
-##  Tech Stack
+### Health
+GET /health
 
-- Python (Flask)
-- Groq LLM (AI analysis)
-- REST API
-- In-memory caching (SHA256)
-- OWASP ZAP (security testing)
+### Predict
+POST /predict
 
----
+Example:
+{
+  "text": "Late payment clause"
+}
 
-##  Development Progress
+## Run Locally
 
-###  Day 1–2: Project Setup
-- Flask project structure created
-- Basic API setup
-- Folder organization (routes, services)
-
----
-
-###  Day 3–4: Core API Development
-- Implemented `/create` endpoint
-- JSON request/response handling
-- Basic contract input processing
-
----
-
-###  Day 5–6: AI Integration
-- Integrated Groq LLM
-- Generated structured contract analysis
-- Output fields:
-  - title
-  - summary
-  - overview
-  - key_items
-  - recommendations
-
----
-
-###  Day 7: Caching & Health Monitoring
-- Added SHA256-based caching
-- Introduced `/health` endpoint
-- Initial metrics tracking
-
----
-
-###  Day 8: Security Enhancements
-- Added security headers:
-  - X-Content-Type-Options
-  - X-Frame-Options
-  - Content-Security-Policy
-- Prepared for OWASP ZAP scan
-
----
-
-###  Day 9: AI Optimization (Part A & B)
-- Optimized response time (<2s)
-- Implemented fallback mechanism:
-  - `{ "is_fallback": true }`
-- Improved API response structure
-- Added performance metrics:
-  - avg_response_time
-  - requests_tracked
-
-
-
-###  Day 10: Finalization
-- Code cleanup
-- Documentation
-- GitHub integration
-- Final testing & validation
-
-
-
-### Setup Instructions
-
- 1. Clone Repository
-bash
-git clone <your-repo-url>
-cd contract-risk-analyser/ai-service
+```bash
+python app.py
